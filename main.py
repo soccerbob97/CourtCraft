@@ -58,18 +58,27 @@ def getAllData():
             year = str(i)
         file_names.append(f'data/NBA_20{year}_Shots.csv')
     
-    df = pd.concat( map(pd.read_csv, file_names), ignore_index=True) 
+    df = pd.concat(map(pd.read_csv, file_names), ignore_index=True) 
     print("number of rows ", df.shape[0])
     return df
-
-def getPlayerHeatMap(df, player_name):
+    
+def plotPlayerShotLocations(df, player_name):
     player_df = df[df["PLAYER_NAME"] == player_name].copy()
     player_df.loc[:,"LOC_X"] = player_df.loc[:,"LOC_X"] * 10 
     player_df.loc[:,"LOC_Y"] = player_df.loc[:,"LOC_Y"] * 10 - 45
+    plotLocations(player_df)
+
+def plotTeamShotLocations(df, year, team_name, game_id):
+    team_df = df[(df["TEAM_NAME"] == team_name) & (df["SEASON_1"] == int(year)) & (df["GAME_ID"] == int(game_id))].copy()
+    team_df.loc[:, "LOC_X"] = team_df.loc[:, "LOC_X"] * 10 
+    team_df.loc[:, "LOC_Y"] = team_df.loc[:, "LOC_Y"] * 10 - 45
+    plotLocations(team_df)
+
+def plotLocations(df):  
     sns.set_style("white")
     sns.set_color_codes()
     fig = plt.figure(figsize=(12,11))
-    plt.scatter(player_df.LOC_X, player_df.LOC_Y)
+    plt.scatter(df.LOC_X, df.LOC_Y)
     draw_court(outer_lines=True)
     plt.xlim(-250,250)
     plt.ylim(422.5, -15)
@@ -79,18 +88,28 @@ def main():
     st.title('NBA HeatMaps')
     all_data = getAllData()
     unique_players = all_data['PLAYER_NAME'].unique()
-    player_option = st.selectbox('Select a Player',options=unique_players)
-    years = [str(i) for i in range(2004, 2024)]
-    years.insert(0, "All years")
-    year_option = st.selectbox('Select a year', options=years)
-    btn = st.button("Create Heat Map for Player")
-    if btn:
-        if year_option == "All years":
-            getPlayerHeatMap(all_data, player_option)
-        else:
-            df = getDataframeForYear(year_option)
-            getPlayerHeatMap(df, player_option)
-    
-    
+    option = st.selectbox('Select Player or Team', options=['Player', 'Team'])
+
+    if option == 'Player':
+        player_option = st.selectbox('Select a Player', options=unique_players)
+        years = [str(i) for i in range(2004, 2024)]
+        years.insert(0, "All years")
+        year_option = st.selectbox('Select a year', options=years)
+        btn = st.button("Create Heat Map for Player")
+        if btn:
+            if year_option == "All years":
+                plotPlayerShotLocations(all_data, player_option)
+            else:
+                df = getDataframeForYear(year_option)
+                plotPlayerShotLocations(df, player_option)
+    elif option == 'Team':
+        team_option = st.selectbox('Select a Team', options=all_data['TEAM_NAME'].unique())
+        year_option = st.selectbox('Select a year', options=[str(i) for i in range(2004, 2024)])
+        game_ids = all_data[(all_data['SEASON_1'] == int(year_option)) & (all_data['TEAM_NAME'] == team_option)]['GAME_ID'].unique()
+        game_id_option = st.selectbox('Select a game', options=game_ids)
+        btn = st.button("Create Heat Map for Team")
+        if btn:
+            plotTeamShotLocations(all_data, year_option, team_option, game_id_option)
+
 if __name__ == "__main__":
     main()
