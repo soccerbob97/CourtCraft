@@ -6,6 +6,79 @@ import seaborn as sns
 
 from matplotlib.patches import Circle, Rectangle, Arc
 
+nba_teams = {
+    'ATL': 'Atlanta Hawks',
+    'BOS': 'Boston Celtics',
+    'BKN': 'Brooklyn Nets',
+    'CHA': 'Charlotte Hornets',
+    'CHI': 'Chicago Bulls',
+    'CLE': 'Cleveland Cavaliers',
+    'DAL': 'Dallas Mavericks',
+    'DEN': 'Denver Nuggets',
+    'DET': 'Detroit Pistons',
+    'GSW': 'Golden State Warriors',
+    'HOU': 'Houston Rockets',
+    'IND': 'Indiana Pacers',
+    'LAC': 'Los Angeles Clippers',
+    'LAL': 'Los Angeles Lakers',
+    'MEM': 'Memphis Grizzlies',
+    'MIA': 'Miami Heat',
+    'MIL': 'Milwaukee Bucks',
+    'MIN': 'Minnesota Timberwolves',
+    'NJN': "New Jersey Nets",
+    'NOH': "New Orleans Hornets",
+    'NOP': 'New Orleans Pelicans',
+    'NYK': 'New York Knicks',
+    'OKC': 'Oklahoma City Thunder',
+    'ORL': 'Orlando Magic',
+    'PHI': 'Philadelphia 76ers',
+    'PHX': 'Phoenix Suns',
+    'POR': 'Portland Trail Blazers',
+    'SAC': 'Sacramento Kings',
+    'SAS': 'San Antonio Spurs',
+    'SEA': 'Seattle Supersonics',
+    'TOR': 'Toronto Raptors',
+    'UTA': 'Utah Jazz',
+    'WAS': 'Washington Wizards'
+}
+
+nba_teams_flipped = {
+    'Atlanta Hawks': 'ATL',
+    'Boston Celtics': 'BOS',
+    'Brooklyn Nets': 'BKN',
+    'Charlotte Hornets': 'CHA',
+    'Chicago Bulls': 'CHI',
+    'Cleveland Cavaliers': 'CLE',
+    'Dallas Mavericks': 'DAL',
+    'Denver Nuggets': 'DEN',
+    'Detroit Pistons': 'DET',
+    'Golden State Warriors': 'GSW',
+    'Houston Rockets': 'HOU',
+    'Indiana Pacers': 'IND',
+    'Los Angeles Clippers': 'LAC',
+    'Los Angeles Lakers': 'LAL',
+    'Memphis Grizzlies': 'MEM',
+    'Miami Heat': 'MIA',
+    'Milwaukee Bucks': 'MIL',
+    'Minnesota Timberwolves': 'MIN',
+    'New Jersey Nets': 'NJN',
+    'New Orleans Hornets': 'NOH',
+    'New Orleans Pelicans': 'NOP',
+    'New York Knicks': 'NYK',
+    'Oklahoma City Thunder': 'OKC',
+    'Orlando Magic': 'ORL',
+    'Philadelphia 76ers': 'PHI',
+    'Phoenix Suns': 'PHX',
+    'Portland Trail Blazers': 'POR',
+    'Sacramento Kings': 'SAC',
+    'San Antonio Spurs': 'SAS',
+    'Seattle Supersonics': 'SEA',
+    'Toronto Raptors': 'TOR',
+    'Utah Jazz': 'UTA',
+    'Washington Wizards': 'WAS'
+}
+
+
 def draw_court(ax=None, color='black', lw=2, outer_lines=False):
     # If an axes object isn't provided to plot onto, just get current one
     if ax is None:
@@ -103,13 +176,23 @@ def main():
                 df = getDataframeForYear(year_option)
                 plotPlayerShotLocations(df, player_option)
     elif option == 'Team':
-        team_option = st.selectbox('Select a Team', options=all_data['TEAM_NAME'].unique())
+        team_option = st.selectbox('Select a Team', options=list(nba_teams.values()))
         year_option = st.selectbox('Select a year', options=[str(i) for i in range(2004, 2024)])
-        game_ids = all_data[(all_data['SEASON_1'] == int(year_option)) & (all_data['TEAM_NAME'] == team_option)]['GAME_ID'].unique()
-        game_id_option = st.selectbox('Select a game', options=game_ids)
+        
+        filtered_data = all_data[(all_data['SEASON_1'] == int(year_option)) & ((all_data['HOME_TEAM'].isin(nba_teams.keys())) | (all_data['AWAY_TEAM'].isin(nba_teams.keys())))]
+
+        opposing_teams = pd.concat([pd.Series(filtered_data['HOME_TEAM'].map(nba_teams)), pd.Series((filtered_data['AWAY_TEAM'].map(nba_teams)))], ignore_index=True).unique()
+        selected_opposing_team = st.selectbox('Select Opposing Team', options=opposing_teams)
+        
+        game_dates = filtered_data[((filtered_data['HOME_TEAM'].map(nba_teams) == selected_opposing_team) | (filtered_data['AWAY_TEAM'].map(nba_teams) == selected_opposing_team))]['GAME_DATE'].unique()
+        selected_game_date = st.selectbox('Select Game Date', options=game_dates)
+        
+        selected_game_ids = filtered_data[((filtered_data['HOME_TEAM'].map(nba_teams) == team_option) | (filtered_data['AWAY_TEAM'].map(nba_teams) == team_option)) & (filtered_data['GAME_DATE'] == selected_game_date)]['GAME_ID'].unique()
+        
         btn = st.button("Create Heat Map for Team")
         if btn:
-            plotTeamShotLocations(all_data, year_option, team_option, game_id_option)
+            for game_id in selected_game_ids:
+                plotTeamShotLocations(all_data, year_option, team_option, game_id)
 
 if __name__ == "__main__":
     main()
