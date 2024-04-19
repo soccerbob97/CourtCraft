@@ -183,13 +183,12 @@ def main():
                     plotPlayerShotLocations(all_data, player_option, "HEX")
             else:
                 df = getDataframeForYear(year_option)
-                if year_option == "All years":
-                    if plot_option == "Simple Shot Chart":
-                        plotPlayerShotLocations(df, player_option, "Simple")
-                    elif plot_option == "KDE Shot Chart":
-                        plotPlayerShotLocations(df, player_option, "KDE")
-                    else:
-                        plotPlayerShotLocations(df, player_option, "HEX")
+                if plot_option == "Simple Shot Chart":
+                    plotPlayerShotLocations(df, player_option, "Simple")
+                elif plot_option == "KDE Shot Chart":
+                    plotPlayerShotLocations(df, player_option, "KDE")
+                else:
+                    plotPlayerShotLocations(df, player_option, "HEX")
     elif option == 'Team':
         team_option = st.selectbox('Select a Team', options=list(nba_teams.values()))
         year_option = st.selectbox('Select a year', options=[str(i) for i in range(2004, 2024)])
