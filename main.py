@@ -192,27 +192,31 @@ def main():
     elif option == 'Team':
         team_option = st.selectbox('Select a Team', options=list(nba_teams.values()))
         year_option = st.selectbox('Select a year', options=[str(i) for i in range(2004, 2024)])
-        
-        filtered_data = all_data[(all_data['SEASON_1'] == int(year_option)) & ((all_data['HOME_TEAM'].isin(nba_teams.keys())) | (all_data['AWAY_TEAM'].isin(nba_teams.keys())))]
 
-        opposing_teams = pd.concat([pd.Series(filtered_data['HOME_TEAM'].map(nba_teams)), pd.Series((filtered_data['AWAY_TEAM'].map(nba_teams)))], ignore_index=True).unique()
+        filtered_data = all_data[(all_data['SEASON_1'] == int(year_option)) & (all_data['TEAM_NAME'] == team_option)]
+
+        opposing_teams = np.where(filtered_data['HOME_TEAM'].map(nba_teams) != team_option, filtered_data['HOME_TEAM'].map(nba_teams), filtered_data['AWAY_TEAM'].map(nba_teams))
+        opposing_teams = np.unique(opposing_teams)
         selected_opposing_team = st.selectbox('Select Opposing Team', options=opposing_teams)
         
         game_dates = filtered_data[((filtered_data['HOME_TEAM'].map(nba_teams) == selected_opposing_team) | (filtered_data['AWAY_TEAM'].map(nba_teams) == selected_opposing_team))]['GAME_DATE'].unique()
         selected_game_date = st.selectbox('Select Game Date', options=game_dates)
+
+        filtered_data = filtered_data[((filtered_data['AWAY_TEAM'].map(nba_teams) == selected_opposing_team) | (filtered_data['HOME_TEAM'].map(nba_teams) == selected_opposing_team))]
+        filtered_data = filtered_data[filtered_data['GAME_DATE'].astype(str) == selected_game_date]
         
-        selected_game_ids = filtered_data[((filtered_data['HOME_TEAM'].map(nba_teams) == team_option) | (filtered_data['AWAY_TEAM'].map(nba_teams) == team_option)) & (filtered_data['GAME_DATE'] == selected_game_date)]['GAME_ID'].unique()
+        game_id = filtered_data['GAME_ID'].unique()
         
         plot_option = st.selectbox('Select Plot Type', options=['Simple Shot Chart', 'KDE Shot Chart', 'HEX Shot Chart'])
         btn = st.button("Create Heat Map for Team")
         if btn:
-            for game_id in selected_game_ids:
-                if plot_option == "Simple Shot Chart":
-                    plotTeamShotLocations(all_data, year_option, team_option, game_id, "Simple")
-                elif plot_option == "KDE Shot Chart":
-                    plotTeamShotLocations(all_data, year_option, team_option, game_id, "KDE")
-                else:
-                    plotTeamShotLocations(all_data, year_option, team_option, game_id, "HEX")
+            df = filtered_data[(filtered_data['TEAM_NAME'] == team_option) & (filtered_data['GAME_ID'] == game_id[0])]
+            if plot_option == "Simple Shot Chart":
+                plotTeamShotLocations(all_data, year_option, team_option, game_id, "Simple")
+            elif plot_option == "KDE Shot Chart":
+                plotTeamShotLocations(all_data, year_option, team_option, game_id, "KDE")
+            else:
+                plotTeamShotLocations(all_data, year_option, team_option, game_id, "HEX")
 
 if __name__ == "__main__":
     main()
