@@ -43,43 +43,6 @@ nba_teams = {
     'WAS': 'Washington Wizards'
 }
 
-nba_teams_flipped = {
-    'Atlanta Hawks': 'ATL',
-    'Boston Celtics': 'BOS',
-    'Brooklyn Nets': 'BKN',
-    'Charlotte Hornets': 'CHA',
-    'Chicago Bulls': 'CHI',
-    'Cleveland Cavaliers': 'CLE',
-    'Dallas Mavericks': 'DAL',
-    'Denver Nuggets': 'DEN',
-    'Detroit Pistons': 'DET',
-    'Golden State Warriors': 'GSW',
-    'Houston Rockets': 'HOU',
-    'Indiana Pacers': 'IND',
-    'Los Angeles Clippers': 'LAC',
-    'Los Angeles Lakers': 'LAL',
-    'Memphis Grizzlies': 'MEM',
-    'Miami Heat': 'MIA',
-    'Milwaukee Bucks': 'MIL',
-    'Minnesota Timberwolves': 'MIN',
-    'New Jersey Nets': 'NJN',
-    'New Orleans Hornets': 'NOH',
-    'New Orleans Pelicans': 'NOP',
-    'New York Knicks': 'NYK',
-    'Oklahoma City Thunder': 'OKC',
-    'Orlando Magic': 'ORL',
-    'Philadelphia 76ers': 'PHI',
-    'Phoenix Suns': 'PHX',
-    'Portland Trail Blazers': 'POR',
-    'Sacramento Kings': 'SAC',
-    'San Antonio Spurs': 'SAS',
-    'Seattle Supersonics': 'SEA',
-    'Toronto Raptors': 'TOR',
-    'Utah Jazz': 'UTA',
-    'Washington Wizards': 'WAS'
-}
-
-
 def draw_court(ax=None, color='black', lw=2, outer_lines_element=False):
     # If an axes object isn't provided to plot onto, just get current one
     if ax is None:
