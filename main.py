@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 from matplotlib.patches import Circle, Rectangle, Arc
 
@@ -119,8 +120,11 @@ def getAllData():
             year = "0" + str(i)
         else:
             year = str(i)
-        file_names.append(f'data/NBA_20{year}_Shots.csv')
-    
+        file_name = f'data/NBA_20{year}_Shots.csv'
+        if not os.path.isfile(file_name):
+            print("MISSING THIS FILE: ", file_name)
+            return None
+        file_names.append(file_name)
     df = pd.concat(map(pd.read_csv, file_names), ignore_index=True) 
     print("number of rows ", df.shape[0])
     return df
@@ -161,8 +165,11 @@ def plotTeamShotLocations(df, year, team_name, game_id, plot_type):
 
     
 def main():
-    st.title('NBA HeatMaps')
     all_data = getAllData()
+    if all_data is None:
+        st.title('Missing necessary csv files!')
+        return 
+    st.title('NBA HeatMaps')
     unique_players = all_data['PLAYER_NAME'].unique()
     option = st.selectbox('Select Player or Team', options=['Player', 'Team'])
 
